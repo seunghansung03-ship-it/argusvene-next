@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@argusvene/contracts": "0.1.0",
+    "@google/genai": "^1.29.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "multer": "^2.0.2"

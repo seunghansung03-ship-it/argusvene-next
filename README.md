@@ -38,3 +38,18 @@
 - 버튼을 만들면 끝까지 작동하게 만든다
 - Live meeting room이 제품의 중심이다
 - 해커톤 규정을 만족하지 못하는 기능은 우선순위에서 제외한다
+
+## Current local run
+
+1. Copy `.env.example` to `.env`
+2. Set `GEMINI_API_KEY` or `GOOGLE_API_KEY`
+3. Run `npm install`
+4. Run `npm run dev`
+
+Current baseline includes:
+
+- real workspace and meeting CRUD
+- file upload and download
+- three-panel meeting room UI
+- artifact, decision, and task capture
+- Gemini agent turn execution through the Google Gen AI SDK when an API key is configured

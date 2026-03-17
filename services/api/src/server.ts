@@ -41,6 +41,7 @@ import {
   sendTurn,
   updateMeetingParticipant
 } from "./store.js";
+import { generateAgentTurns, isGeminiConfigured } from "./gemini.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
@@ -78,7 +79,7 @@ function routeParam(value: string | string[] | undefined, label: string) {
 }
 
 app.get("/api/health", (_request, response) => {
-  response.json({ ok: true });
+  response.json({ ok: true, geminiConfigured: isGeminiConfigured() });
 });
 
 app.post("/api/auth/login", (request, response) => {
@@ -295,6 +296,40 @@ app.get("/api/meetings/:meetingId/outcomes", (request, response) => {
 app.post("/api/meetings/:meetingId/end", (request, response) => {
   try {
     response.json(endMeeting(routeParam(request.params.meetingId, "Meeting id")));
+  } catch (error) {
+    handleError(error, response);
+  }
+});
+
+app.post("/api/meetings/:meetingId/agent-turns", async (request, response) => {
+  try {
+    const meetingId = routeParam(request.params.meetingId, "Meeting id");
+    const room = getRoomState(meetingId);
+    const agentTurns = await generateAgentTurns(room);
+
+    for (const turn of agentTurns) {
+      if (!turn.output.shouldRespond) {
+        continue;
+      }
+
+      if (turn.output.reply.trim()) {
+        sendTurn(meetingId, turn.participant.id, turn.output.reply.trim());
+      }
+
+      if (turn.output.artifact) {
+        createArtifact(meetingId, turn.output.artifact);
+      }
+
+      if (turn.output.decision) {
+        createDecision(meetingId, turn.output.decision);
+      }
+
+      if (turn.output.task) {
+        createTask(meetingId, turn.output.task);
+      }
+    }
+
+    response.json(getRoomState(meetingId));
   } catch (error) {
     handleError(error, response);
   }

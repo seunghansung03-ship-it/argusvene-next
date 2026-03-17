@@ -16,6 +16,11 @@ import type {
   WorkspaceSnapshot
 } from "@argusvene/contracts";
 
+interface HealthResponse {
+  ok: boolean;
+  geminiConfigured: boolean;
+}
+
 async function request<T>(input: string, init?: RequestInit) {
   const response = await fetch(input, {
     headers: {
@@ -38,6 +43,9 @@ async function request<T>(input: string, init?: RequestInit) {
 }
 
 export const api = {
+  health() {
+    return request<HealthResponse>("/api/health");
+  },
   login(payload: LoginPayload) {
     return request<User>("/api/auth/login", {
       method: "POST",
@@ -100,6 +108,11 @@ export const api = {
     return request<RoomState>(`/api/meetings/${meetingId}/turn`, {
       method: "POST",
       body: JSON.stringify(payload)
+    });
+  },
+  runAgentTurns(meetingId: string) {
+    return request<RoomState>(`/api/meetings/${meetingId}/agent-turns`, {
+      method: "POST"
     });
   },
   addParticipant(meetingId: string, payload: AddParticipantPayload) {

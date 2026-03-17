@@ -22,6 +22,8 @@ export function MeetingPage() {
   const [taskTitle, setTaskTitle] = useState("");
   const [taskOwner, setTaskOwner] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isRunningAgents, setIsRunningAgents] = useState(false);
+  const [geminiConfigured, setGeminiConfigured] = useState(false);
 
   async function loadRoom() {
     setRoom(await api.getRoom(meetingId));
@@ -32,6 +34,16 @@ export function MeetingPage() {
       setError(fetchError instanceof Error ? fetchError.message : "Failed to load meeting room.");
     });
   }, [meetingId]);
+
+  useEffect(() => {
+    api.health()
+      .then((health) => {
+        setGeminiConfigured(health.geminiConfigured);
+      })
+      .catch(() => {
+        setGeminiConfigured(false);
+      });
+  }, []);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -65,6 +77,17 @@ export function MeetingPage() {
     });
     setRoom(nextRoom);
     setMessage("");
+
+    try {
+      setIsRunningAgents(true);
+      const withAgents = await api.runAgentTurns(meetingId);
+      setRoom(withAgents);
+      setError(null);
+    } catch (runError) {
+      setError(runError instanceof Error ? runError.message : "Agent run failed.");
+    } finally {
+      setIsRunningAgents(false);
+    }
   }
 
   async function handleAddParticipant(event: FormEvent<HTMLFormElement>) {
@@ -130,6 +153,18 @@ export function MeetingPage() {
     navigate(`/meeting/${meetingId}/outcomes`);
   }
 
+  async function handleRunAgents() {
+    try {
+      setIsRunningAgents(true);
+      setRoom(await api.runAgentTurns(meetingId));
+      setError(null);
+    } catch (runError) {
+      setError(runError instanceof Error ? runError.message : "Agent run failed.");
+    } finally {
+      setIsRunningAgents(false);
+    }
+  }
+
   if (!room) {
     return (
       <AppShell title="Meeting Room" subtitle="Loading live room...">
@@ -147,6 +182,9 @@ export function MeetingPage() {
           <Link className="ghost-link" to={`/workspace/${room.workspace.id}`}>
             Workspace
           </Link>
+          <button className="ghost-button" disabled={isRunningAgents} onClick={() => void handleRunAgents()} type="button">
+            {isRunningAgents ? "Running agents..." : geminiConfigured ? "Run agents" : "Gemini not configured"}
+          </button>
           <button className="secondary-button" onClick={() => void handleEndMeeting()} type="button">
             End meeting
           </button>
@@ -159,6 +197,9 @@ export function MeetingPage() {
             <span className="eyebrow">Transcript</span>
             <h2>Human conversation and direct instructions</h2>
           </div>
+          {!geminiConfigured ? (
+            <p className="muted-copy">Gemini is not configured yet. Set `GEMINI_API_KEY` or `GOOGLE_API_KEY` to run live agents.</p>
+          ) : null}
           <div className="message-feed">
             {room.messages.map((entry) => (
               <article className={`message-bubble message-bubble--${entry.authorKind}`} key={entry.id}>

@@ -361,6 +361,11 @@ export function getRoomState(meetingId: string) {
   return buildRoomState(db, meetingId);
 }
 
+export function getMeetingParticipant(meetingId: string, participantId: string) {
+  const db = readDb();
+  return db.meetingParticipants.find((entry) => entry.meetingId === meetingId && entry.id === participantId) ?? null;
+}
+
 export function sendTurn(meetingId: string, authorId: string, content: string) {
   if (!content.trim()) {
     throw new Error("Message content is required.");
