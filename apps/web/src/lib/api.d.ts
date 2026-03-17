@@ -1,0 +1,22 @@
+import type { AddMemberPayload, AddParticipantPayload, CreateArtifactPayload, CreateDecisionPayload, CreateMeetingPayload, CreateTaskPayload, CreateWorkspacePayload, LoginPayload, Meeting, RoomState, SendTurnPayload, User, Workspace, WorkspaceFile, WorkspaceSnapshot } from "@argusvene/contracts";
+export declare const api: {
+    login(payload: LoginPayload): Promise<User>;
+    listWorkspaces(userId: string): Promise<Workspace[]>;
+    createWorkspace(payload: CreateWorkspacePayload): Promise<Workspace>;
+    getWorkspace(workspaceId: string): Promise<WorkspaceSnapshot>;
+    addWorkspaceMember(workspaceId: string, payload: AddMemberPayload): Promise<unknown>;
+    removeWorkspaceMember(workspaceId: string, memberId: string): Promise<unknown>;
+    uploadWorkspaceFile(workspaceId: string, file: File): Promise<WorkspaceFile>;
+    removeWorkspaceFile(workspaceId: string, fileId: string): Promise<unknown>;
+    createMeeting(workspaceId: string, payload: CreateMeetingPayload): Promise<Meeting>;
+    getRoom(meetingId: string): Promise<RoomState>;
+    sendTurn(meetingId: string, payload: SendTurnPayload): Promise<RoomState>;
+    addParticipant(meetingId: string, payload: AddParticipantPayload): Promise<unknown>;
+    updateParticipant(meetingId: string, participantId: string, active: boolean): Promise<unknown>;
+    removeParticipant(meetingId: string, participantId: string): Promise<unknown>;
+    createArtifact(meetingId: string, payload: CreateArtifactPayload): Promise<unknown>;
+    createDecision(meetingId: string, payload: CreateDecisionPayload): Promise<unknown>;
+    createTask(meetingId: string, payload: CreateTaskPayload): Promise<unknown>;
+    getOutcomes(meetingId: string): Promise<Pick<RoomState, "artifacts" | "decisions" | "tasks">>;
+    endMeeting(meetingId: string): Promise<unknown>;
+};

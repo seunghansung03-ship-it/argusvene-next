@@ -1,0 +1,21 @@
+{
+  "name": "argusvene",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run build --workspace @argusvene/contracts && concurrently -n api,web -c cyan,green \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm run dev --workspace @argusvene/api",
+    "dev:web": "npm run dev --workspace @argusvene/web",
+    "build": "npm run build --workspace @argusvene/contracts && npm run build --workspace @argusvene/api && npm run build --workspace @argusvene/web",
+    "check": "npm run build --workspace @argusvene/contracts && npm run check --workspace @argusvene/api && npm run check --workspace @argusvene/web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "typescript": "^5.9.2"
+  }
+}
